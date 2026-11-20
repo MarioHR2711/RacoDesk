@@ -1,5 +1,10 @@
-# Documentation / Documentación
+# Documentation
 
-Project documents (deliverables, diagrams, design decisions). / Documentos del proyecto (entregas, diagramas, decisiones de diseño).
+**Read this in other languages:** [Español](README.es.md)
 
-Technologies and mechanisms described here are provisional. / Las tecnologías y mecanismos descritos son provisionales.
+Project documents (deliverables, diagrams, design decisions).
+
+- [Database](database.md)
+- [Permission matrix](permissions.md)
+
+Technologies and mechanisms described here are provisional.

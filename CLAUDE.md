@@ -1,229 +1,232 @@
-# CLAUDE.md — Contexto del proyecto RacoDesk
+# CLAUDE.md — RacoDesk project context
 
-Este archivo da contexto a Claude Code. Resume lo hablado y decidido hasta ahora por el equipo.
-**Regla principal:** no inventes decisiones. Si algo está marcado como pendiente, pregunta antes de decidir.
-El repositorio es **público**: nunca escribas contraseñas, claves, `.env` reales ni datos reales de clientes.
-**Claude Code escribe el código** del proyecto. El equipo revisa y decide.
+**Read this in other languages:** [Español](CLAUDE.es.md)
 
-## Qué es
+This file gives context to Claude Code. It summarizes what the team has discussed and decided so far.
+**Main rule:** do not invent decisions. If something is listed as undecided, ask before deciding.
+The repository is **public**: never write passwords, keys, real `.env` files or real customer data.
+**Claude Code writes the project's code.** The team reviews and decides.
 
-RacoDesk es el Proyecto Intermodular (TFG) de DAM, 2.º curso, en Victoria Institute of Technology.
-Es un sistema de gestión para restaurantes con uno o varios locales. Cada restaurante tiene su propio
-servidor local y su propia base de datos, así que sigue funcionando sin Internet. El propietario consulta
-sus locales a distancia.
+## What it is
 
-Estado: fase de diseño. **Todavía no hay código.** No presentes como hecho nada que sea solo diseño.
+RacoDesk is the final project (*Proyecto Intermodular*, TFG) of the DAM higher technical degree, 2nd year, at Victoria Institute of Technology.
+It is a management system for restaurants with one or several premises. Each restaurant has its own
+local server and its own database, so it keeps working without Internet. The owner checks their
+premises remotely.
 
-## Equipo
+Status: design stage. **There is no code yet.** Do not present anything as done if it is only design.
 
-- Mario Hernández Ramos — GitHub `MarioHR2711` (dueño del repo)
-- Alejandro Domínguez Mora — GitHub `alexdm0749-ops` (colaborador)
-- No hay reparto de tareas confirmado. No asignes módulos a nadie sin preguntar.
+## Team
 
-## Arquitectura
+- Mario Hernández Ramos — GitHub `MarioHR2711` (repository owner)
+- Alejandro Domínguez Mora — GitHub `alexdm0749-ops` (collaborator)
+- There is no confirmed task split. Do not assign modules to anyone without asking.
 
-- **Servidor local (uno por restaurante):** lógica, API y base de datos propia. Comprueba permisos.
-  Es un **TPV normal con Windows** en el restaurante. Si hay varios terminales, el software de servidor se instala
-  **solo en uno** y el software de empleado en **todos**. Las apps **nunca** acceden directo a la base de datos;
-  hablan con la API del servidor local por la red del local.
-- **Servidor central:** guarda solo información general (propietarios, empresas, locales, instalaciones locales,
-  administradores globales y sus permisos). **No guarda copia de pedidos, pagos, gastos ni datos operativos.**
-  **Decidido:** la **base de datos** del central está en **Supabase** (PostgreSQL) y la **lógica y funcionalidades**
-  están en una **aplicación de servidor central propia** (Laravel, provisional), no en Edge Functions.
-- **App de empleados:** operaciones del local según rol. Una versión Android y una versión **idéntica en Windows** para los TPV,
-  con **React Native** (React Native for Windows para el TPV).
-- **App del propietario (Android):** consulta (ver estadísticas abajo) y **también puede modificar cosas en remoto**
-  (solo las acciones permitidas, ver «Acceso remoto»).
-- **Panel web de administración:** para administradores globales. **Solo se encarga de la base de datos central** (propietarios, empresas, locales, instalaciones, administradores y sus permisos).
-  No gestiona empleados, productos, mesas ni configuración de ningún local.
-- **Sin Internet:** el local sigue trabajando (pedidos, mesas, productos, reservas, clientes, inventario, pagos, gastos).
-  Solo falla la consulta remota. En ese caso la app del propietario muestra un mensaje de que **no es posible conectar con el servidor** (no se muestran datos antiguos).
-- **Sin suscripciones:** no hay planes ni cobros por suscripción.
+## Architecture
 
-### Reglas de negocio confirmadas
+- **Local server (one per restaurant):** business logic, API and its own database. It checks permissions.
+  It is a **regular Windows POS (TPV)** at the restaurant. If there are several terminals, the server software is installed
+  on **only one** and the employee software on **all of them**. Apps **never** access the database directly;
+  they talk to the local server's API over the restaurant's local network.
+- **Central server:** stores only general information (owners, companies, premises, local installations,
+  global administrators and their permissions). **It keeps no copy of orders, payments, expenses or operational data.**
+  **Decided:** the central **database** is in **Supabase** (PostgreSQL) and the **logic and features**
+  live in a **dedicated central server application** (Laravel, provisional), not in Edge Functions.
+- **Employee app:** operations of the premises according to role. One Android version and an **identical Windows version** for the POS terminals,
+  built with **React Native** (React Native for Windows for the POS).
+- **Owner app (Android):** shows data (see statistics below) and **can also change things remotely**
+  (only the allowed actions, see "Remote access").
+- **Admin web panel:** for global administrators. **It only takes care of the central database** (owners, companies, premises, installations, administrators and their permissions).
+  It does not manage employees, products, tables or settings of any premises.
+- **Without Internet:** the premises keep working (orders, tables, products, reservations, customers, inventory, payments, expenses).
+  Only remote access fails. In that case the owner app shows a message saying it is **not possible to connect to the server** (no old data is shown).
+- **No subscriptions:** there are no plans or subscription charges.
 
-- Un **encargado** gestiona **1 local**. Un **propietario** gestiona **todos** sus locales.
-- Un pedido se da por **pagado** cuando el **camarero confirma** el pago. Se permiten **pagos parciales**: varios cobros por pedido; se cierra al sumar el total.
-- El **ticket** se entrega al cliente cuando paga la cuenta.
-- Los **gastos** salen de: pago de salarios y pago a proveedores de productos.
-- `employee_work_hours` guarda las horas trabajadas **por semana** por empleado, para calcular el salario pagado ese mes.
-- **Horas extra:** el empleado elige entre **cobrarlas** o **tiempo de descanso** (`overtime_choice`: `PAID` o `TIME_OFF`).
-  Las cobradas se suman al salario del mes; las de descanso forman una bolsa de horas que se descuenta con `time_off_records`.
-  Tarifa de las horas extra cobradas: depende del convenio; se configura con `restaurant.overtime_multiplier`.
-- **Semana que cruza dos meses:** la semana cuenta para el mes en que cae su **jueves** (`week_start` + 3 días; regla ISO).
-- **Copias de seguridad:** automáticas **cada día**, guardadas por defecto **en el mismo equipo**. **Decidido:** la carpeta de destino debe poder configurarse (`restaurant.backup_path`).
-  Aviso: con la copia solo en el mismo equipo, un fallo del disco pierde datos y copia; recomendar copia externa.
-- Matriz de permisos por rol: borrador final en `docs/permissions.md`, pendiente de visto bueno.
+### Confirmed business rules
 
-### Estadísticas de la app del propietario
+- A **manager** manages **1 premises**. An **owner** manages **all** their premises.
+- An order is considered **paid** when the **waiter confirms** the payment. **Partial payments** are allowed: several payments per order; it closes when they add up to the total.
+- The **ticket** is given to the customer when they pay the bill.
+- **Expenses** come from: salary payments and payments to product suppliers.
+- `employee_work_hours` stores the hours worked **per week** by each employee, to calculate the salary paid that month.
+- **Overtime:** the employee chooses between **being paid** or **time off** (`overtime_choice`: `PAID` or `TIME_OFF`).
+  Paid overtime is added to the month's salary; time-off overtime builds a bank of hours that is used up through `time_off_records`.
+  Rate of paid overtime: depends on the collective agreement; set with `restaurant.overtime_multiplier`.
+- **Week spanning two months:** the week counts for the month in which its **Thursday** falls (`week_start` + 3 days; ISO rule).
+- **Backups:** automatic **every day**, stored by default **on the same computer**. **Decided:** the destination folder must be configurable (`restaurant.backup_path`).
+  Warning: with the copy only on the same computer, a disk failure loses data and copy; recommend an external copy.
+- Permission matrix per role: `docs/permissions.md`.
 
-Ingresos, gastos, empleados (horas, coste, ventas), productos (más vendidos, ingresos por producto y categoría), stock bajo,
-comparación entre locales. Las calcula el servidor local y envía totales. No hay tabla de estadísticas.
+### Owner app statistics
 
-### Reglas de seguridad (obligatorias)
+Income, expenses, employees (hours, cost, sales), products (best sellers, income per product and category), low stock,
+comparison between premises. The local server calculates them and sends totals. There is no statistics table.
 
-1. Los permisos se comprueban **en el servidor**, no solo ocultando botones.
-2. El administrador global **no puede** ver ventas, ingresos, gastos, pagos, beneficios ni estadísticas económicas.
-   Se aplica también en las APIs; el servidor debe rechazar la petición.
-3. Contraseñas guardadas como `password_hash`.
-4. Auditoría: tabla `audit_logs` solo para acciones importantes.
-5. RGPD (desarrollo): datos personales definidos por el equipo: **empleados** = nombre, apellidos, teléfono, email, dirección; **clientes de reparto** = nombre, teléfono, dirección. No guardes más datos personales; los datos de clientes y empleados viven en el servidor local;
-   el central solo tiene datos de propietarios y administradores; Supabase en **región de la UE**; poder borrar o anonimizar a un cliente o empleado
-   si lo pide; nunca registrar datos personales en logs; avisar al propietario ante una brecha.
+### Security rules (mandatory)
 
-## Acceso remoto del propietario (PROPUESTA, no cerrada)
+1. Permissions are checked **on the server**, not just by hiding buttons.
+2. The global administrator **cannot** see sales, income, expenses, payments, profits or economic statistics.
+   This also applies in the APIs; the server must reject the request.
+3. Passwords are stored as `password_hash`.
+4. Audit: the `audit_logs` table is only for important actions.
+5. GDPR (development): personal data defined by the team: **employees** = first name, last name, phone, email, address; **delivery customers** = name, phone, address. Do not store more personal data; customer and employee data live on the local server;
+   the central only holds owner and administrator data; Supabase in an **EU region**; be able to delete or anonymize a customer or employee
+   on request; never write personal data to logs; notify the owner in case of a breach.
 
-Objetivo: que el propietario vea sus locales a distancia de forma **segura y eficiente**, sin que el central guarde datos operativos.
-Se empieza **directamente con WebSocket** (sin fase de cola de peticiones).
+## Owner remote access
 
-Idea clave: el servidor local **abre** una conexión de salida al central. Nunca se abren puertos en el router del restaurante.
+Goal: let the owner see their premises remotely in a **secure and efficient** way, without the central storing operational data.
+It starts **directly with WebSocket** (no request-queue phase).
+
+Key idea: the local server **opens** an outbound connection to the central. No ports are ever opened on the restaurant's router.
 
 ```
-App propietario --HTTPS--> Servidor central <==WebSocket seguro== Servidor local
-   (token corto)           (relay, no guarda)    (lo abre el local)
+Owner app --HTTPS--> Central server <==secure WebSocket== Local server
+ (short token)       (relay, stores nothing)   (opened by the local)
 ```
 
-Flujo: la app pide un dato → el central valida el token y reenvía la petición al local → el local responde solo con
-lo pedido → el central pasa la respuesta y **no la guarda**.
+Flow: the app asks for data → the central validates the token and forwards the request to the local → the local replies only with
+what was asked → the central passes the answer on and **does not store it**.
 
-Seguridad:
-- Todo cifrado con TLS (HTTPS / WSS).
-- Clave propia por local, creada en la vinculación por QR con token de un solo uso y caducidad corta. Revocable.
-- Token del propietario de vida corta, con renovación.
-- El **local comprueba** (`linked_owners`) que ese propietario es dueño de ese local; no fiarse solo del central.
-- Lista cerrada de operaciones permitidas (consultas y, ahora, **modificaciones** del propietario). El central **no** es un túnel libre.
-- Las modificaciones remotas: las valida y **ejecuta el servidor local** con sus propias reglas y permisos; el central nunca escribe en la BD local.
-  Cada una queda en `audit_logs` (con el propietario que la pidió), lleva identificador único para no repetirse (idempotencia)
-  y puede requerir que el local esté conectado (si no, se rechaza con mensaje claro; no se encolan).
-- **Acciones que el propietario puede hacer en remoto (decidido):** gestionar productos y precios (categorías, ingredientes, modificadores),
-  empleados (incluido **borrarlos y cambiar su rol**), mesas, y horas trabajadas y salarios.
-- **No puede tocar en remoto:** pedidos, pagos, reservas (ni clientes). Eso solo se hace en el local. En remoto solo los consulta (salvo reservas, que ni siquiera se tocan).
-- Cualquier acción fuera de esta lista debe rechazarla el servidor local.
-- Límite de peticiones por usuario y por local.
-- Registro de accesos (`access_logs`) **sin guardar el contenido**.
-- El admin global no puede pedir datos económicos: solo un token de propietario las acepta.
-- Mejora futura opcional: cifrado de extremo a extremo entre app y local.
+Security:
+- Everything encrypted with TLS (HTTPS / WSS).
+- Own key per local, created during QR pairing with a single-use, short-lived token. Revocable.
+- Short-lived owner token, with renewal.
+- The **local checks** (`linked_owners`) that this owner owns this local; do not rely only on the central.
+- Closed list of allowed operations (queries and, now, owner **changes**). The central is **not** a free tunnel.
+- Remote changes: validated and **executed by the local server** with its own rules and permissions; the central never writes to the local DB.
+  Each one is recorded in `audit_logs` (with the owner who requested it), carries a unique identifier so it is not repeated (idempotency)
+  and may require the local to be connected (otherwise it is rejected with a clear message; they are not queued).
+- **Actions the owner can do remotely (decided):** manage products and prices (categories, ingredients, modifiers),
+  employees (including **deleting them and changing their role**), tables, and worked hours and salaries.
+- **Cannot be changed remotely:** orders, payments, reservations (nor customers). That is only done at the premises. Remotely they are only viewed (reservations are not even touched).
+- Any action outside this list must be rejected by the local server.
+- Rate limit per user and per local.
+- Access log (`access_logs`) **without storing the content**.
+- The global admin cannot request economic data: only an owner token accepts them.
+- Optional future improvement: end-to-end encryption between app and local.
 
-Eficiencia: el local envía totales resumidos; paginación y compresión; caché muy corta solo en memoria (opcional, documentarla).
+Efficiency: the local sends summarized totals; pagination and compression; very short cache in memory only (optional, document it).
 
-### Supabase en el central (decidido)
+### Supabase in the central (decided)
 
-- Supabase solo aporta la **base de datos PostgreSQL** del central. La aplicación del servidor central (Laravel, provisional)
-  se aloja aparte y se conecta a esa BD; aloja también el WebSocket de relay (por ejemplo Laravel Reverb).
-- Supabase no puede alojar Laravel. **Decidido:** la aplicación central Laravel se ejecuta en un **ordenador con Windows**.
-  Ese equipo debe ser alcanzable desde Internet por los locales y por la app del propietario (IP pública/dominio, HTTPS, puertos o túnel: por resolver).
-- Detalle por resolver: el servidor local es **cliente** del WebSocket; Reverb es servidor, así que el local usará una librería cliente compatible.
-- Como los datos económicos pasan por un tercero (el central), elegir región UE (RGPD) y valorar el cifrado de extremo a extremo.
+- Supabase only provides the central's **PostgreSQL database**. The central server application (Laravel, provisional)
+  is hosted separately and connects to that DB; it also hosts the relay WebSocket (for example Laravel Reverb).
+- Supabase cannot host Laravel. **Decided:** the central Laravel application runs on a **Windows computer**.
+  That computer must be reachable from the Internet by the locals and by the owner app (public IP/domain, HTTPS, ports or tunnel: to be solved).
+- Detail to solve: the local server is a WebSocket **client**; Reverb is a server, so the local will use a compatible client library.
+- Since economic data passes through a third party (the central), choose an EU region (GDPR) and consider end-to-end encryption.
 
-## Tecnologías (PROVISIONALES, pueden cambiar)
+## Technologies (PROVISIONAL, may change)
 
-| Área | Tecnología |
+| Area | Technology |
 |---|---|
-| Apps Android y Windows | JavaScript + React Native (React Native for Windows) |
-| Panel web | JavaScript + React |
-| Servidor local | PHP + Laravel (Sanctum), PostgreSQL |
-| Servidor central | App Laravel (provisional) + BD PostgreSQL en Supabase. Login de propietarios y admins: propio de Laravel (Sanctum), **no** Supabase Auth |
-| Base de datos | PostgreSQL |
-| Herramientas | VS Code, Git/GitHub, Trello |
-| Pruebas (propuesta) | PHPUnit/Pest (servidores), Jest (apps) |
+| Android and Windows apps | JavaScript + React Native (React Native for Windows) |
+| Web panel | JavaScript + React |
+| Local server | PHP + Laravel (Sanctum), PostgreSQL |
+| Central server | Laravel app (provisional) + PostgreSQL DB in Supabase. Owner and admin login: Laravel's own (Sanctum), **not** Supabase Auth |
+| Database | PostgreSQL |
+| Tools | VS Code, Git/GitHub, Trello |
+| Testing | PHPUnit/Pest (servers), Jest (apps) |
 
-Decidido: la app de empleados en Windows se hace con **React Native for Windows** (mismo código que Android, instalada en el TPV).
-Pueden hacer falta módulos nativos de Windows (por ejemplo impresión de tickets).
+Decided: the employee app on Windows is built with **React Native for Windows** (same code as Android, installed on the POS).
+Native Windows modules may be needed (for example ticket printing).
 
-Sin decidir: herramienta de diseño de interfaces (no por ahora), Docker, descubrimiento del servidor en la LAN (IP fija o mDNS).
+Undecided: UI design tool (not for now), Docker, how to discover the server on the LAN (fixed IP or mDNS).
 
-## Pendiente de decidir (pregunta antes de implementar)
+## Undecided (ask before implementing)
 
-- Cómo se hace alcanzable desde Internet el ordenador Windows del central (IP/dominio, HTTPS, túnel).
-- Visto bueno final a la matriz de permisos (`docs/permissions.md`).
-- Copia de seguridad externa recomendada (el TPV servidor y el central son punto único de fallo).
-- RGPD: política de privacidad, conservación, derecho a borrar datos, aviso de brechas (ver reglas de desarrollo en «Reglas de seguridad»).
-- Facturación: el cliente recibe un **ticket**. Falta analizar si tiene efectos fiscales y si afecta VERI*FACTU
-  (preguntar al tutor). No afirmes que RacoDesk cumple VERI*FACTU.
+- How the central's Windows computer is made reachable from the Internet (IP/domain, HTTPS, tunnel).
+- External backup recommended (the server POS and the central are a single point of failure).
+- GDPR: privacy policy, retention, right to erasure, breach notification (see development rules in "Security rules").
+- Invoicing: the customer receives a **ticket**. It still has to be analyzed whether it has tax effects and whether it affects VERI*FACTU
+  (ask the tutor). Do not claim that RacoDesk complies with VERI*FACTU.
 
-## Funcionalidades definidas
+## Defined features
 
-1. Empleados y permisos
-2. Mesas y agrupaciones de mesas
-3. Pedidos y productos
-4. Categorías, ingredientes y modificadores
-5. Clientes y reservas
-6. Pedidos a domicilio y repartidores
-7. Pagos y gastos (con ticket al cliente)
-8. Inventario y avisos de stock
-9. Notificaciones
-10. Estadísticas
+1. Employees and permissions
+2. Tables and table groups
+3. Orders and products
+4. Categories, ingredients and modifiers
+5. Customers and reservations
+6. Delivery orders and drivers
+7. Payments and expenses (with ticket for the customer)
+8. Inventory and stock alerts
+9. Notifications
+10. Statistics
 
-Las horas de trabajo y salarios forman parte de gastos y estadísticas (`employee_work_hours`, `salary_payments`).
+Work hours and salaries are part of expenses and statistics (`employee_work_hours`, `salary_payments`).
 
 ## Roles
 
-Borrador de matriz de permisos: `docs/permissions.md` (pendiente de revisión del equipo).
+Permission matrix: `docs/permissions.md`.
 
-Locales: `OWNER`, `MANAGER`, `WAITER`, `KITCHEN`, `DELIVERY`. El `ADMIN` global es independiente.
-Permisos efectivos = permisos del rol + permisos individuales (`role_permissions` + `user_permissions`).
-Admins globales: tablas separadas `admin_permissions` y `admin_user_permissions`.
+Local roles: `OWNER`, `MANAGER`, `WAITER`, `KITCHEN`, `DELIVERY`. The global `ADMIN` is independent.
+Effective permissions = role permissions + individual permissions (`role_permissions` + `user_permissions`).
+Global admins: separate tables `admin_permissions` and `admin_user_permissions`.
 
-## Modelo de datos
+## Data model
 
-Esquema completo (todas las tablas, campos y función de cada tabla): **`docs/database.md`**. Léelo antes de crear migraciones.
+Full schema (all tables, fields and the purpose of each table): **`docs/database.md`**. Read it before creating migrations.
 
-**Base local (33 tablas):** restaurant, roles, permissions, role_permissions, users, user_permissions, linked_owners,
+**Local database (33 tables):** restaurant, roles, permissions, role_permissions, users, user_permissions, linked_owners,
 employee_work_hours, salary_payments, time_off_records, tables, table_groups, table_group_members, categories, products, suppliers,
 ingredients, product_ingredients, ingredient_modifiers, customers, orders, order_items, order_item_modifiers,
 reservations, reservation_tables, delivery_drivers, delivery_orders, payments, expenses, supplier_payments,
 user_devices, notifications, audit_logs.
 
-**Base central (9 tablas):** owners, companies, locations, local_installations, pairing_tokens, access_logs,
+**Central database (9 tables):** owners, companies, locations, local_installations, pairing_tokens, access_logs,
 admins, admin_permissions, admin_user_permissions.
 
-Decisiones de diseño:
-- Estados de mesa: `AVAILABLE`, `OCCUPIED`, `RESERVED`. Una agrupación se reutiliza; no hay historial.
-- Tipos de pedido: `DINE_IN` (mesa o agrupación), `TAKEAWAY`, `DELIVERY`. No hay flujo de estados; se sabe si está pagado por `closed_at`.
-- Modificadores: `REMOVE` y `EXTRA`.
-- Se guarda precio e IVA del producto en el momento del pedido. Precio con IVA incluido.
-- Reservas: `PENDING`, `CONFIRMED`, `CANCELLED`, `COMPLETED`, con restricción anti-solape.
-- Pagos: `CASH`, `CARD`, `ONLINE`; estados `PENDING`, `PAID`, `FAILED`, `REFUNDED`.
-- Gastos: tabla `expenses` con tipo `SALARY` o `SUPPLIER` y tablas de detalle (`salary_payments`, `supplier_payments`).
-- Notificaciones: `LOW_STOCK` (encargado y propietario), `NEW_ORDER` (cocina).
-- Inventario: existencias y mínimos en `ingredients`. No hay `inventory_movements`.
-- Reparto opcional por restaurante.
-- `audit_logs.entity_id` es polimórfico.
+Design decisions:
+- Table states: `AVAILABLE`, `OCCUPIED`, `RESERVED`. A table group is reused; there is no history.
+- Order types: `DINE_IN` (table or group), `TAKEAWAY`, `DELIVERY`. There is no state flow; whether it is paid is known from `closed_at`.
+- Modifiers: `REMOVE` and `EXTRA`.
+- The product price and VAT at the time of the order are stored. Price includes VAT.
+- Reservations: `PENDING`, `CONFIRMED`, `CANCELLED`, `COMPLETED`, with an anti-overlap constraint.
+- Payments: `CASH`, `CARD`, `ONLINE`; states `PENDING`, `PAID`, `FAILED`, `REFUNDED`.
+- Expenses: `expenses` table with type `SALARY` or `SUPPLIER` and detail tables (`salary_payments`, `supplier_payments`).
+- Notifications: `LOW_STOCK` (manager and owner), `NEW_ORDER` (kitchen).
+- Inventory: stock and minimums in `ingredients`. There is no `inventory_movements` table.
+- Delivery is optional per restaurant.
+- `audit_logs.entity_id` is polymorphic.
 
-## Plan de trabajo (lo que se va a hacer)
+## Work plan (what will be done)
 
-Incremental e iterativo, con prácticas de Scrum adaptadas a dos personas. Iteraciones de dos semanas (propuesta, sin fechas oficiales).
+Incremental and iterative, with Scrum practices adapted to two people. Two-week iterations (no official dates).
 
-| It. | Qué se hará |
+| It. | What will be done |
 |---|---|
-| 0 | Cerrar decisiones pendientes (central/Supabase, cliente Windows, permisos); repo, CI básica, estructura de carpetas; primer código mínimo para subir a Git |
-| 1 | Servidor local: Laravel + PostgreSQL, migraciones (`docs/database.md`), autenticación, empleados, roles y permisos, `audit_logs` |
-| 2 | Mesas y agrupaciones, categorías, productos, ingredientes, modificadores, pedidos (sala, llevar) |
-| 3 | Pagos (confirmación del camarero) y ticket, gastos, proveedores, horas semanales y salarios, inventario, notificaciones |
-| 4 | Clientes, reservas, pedidos a domicilio, repartidores |
-| 5 | Central (app Laravel + BD en Supabase) y comunicación por WebSocket con locales: vinculación por QR, `linked_owners`, consultas y modificaciones remotas permitidas, `access_logs`, mensaje de «sin conexión» |
-| 6 | App del propietario con estadísticas y modificaciones remotas, panel de administración (sin acceso económico), versión Windows de la app de empleados |
-| 7 | Estabilización, pruebas de aceptación, copias de seguridad, RGPD, documentación, entrega |
+| 0 | Repo, basic CI, folder structure; first minimal code to push to Git |
+| 1 | Local server: Laravel + PostgreSQL, migrations (`docs/database.md`), authentication, employees, roles and permissions, `audit_logs` |
+| 2 | Tables and groups, categories, products, ingredients, modifiers, orders (dine-in, takeaway) |
+| 3 | Payments (waiter confirmation) and ticket, expenses, suppliers, weekly hours and salaries, inventory, notifications |
+| 4 | Customers, reservations, delivery orders, drivers |
+| 5 | Central (Laravel app + DB in Supabase) and WebSocket communication with locals: QR pairing, `linked_owners`, allowed remote queries and changes, `access_logs`, "no connection" message |
+| 6 | Owner app with statistics and remote changes, admin panel (no economic access), Windows version of the employee app |
+| 7 | Stabilization, acceptance tests, backups, GDPR, documentation, delivery |
 
-Orden de trabajo para Claude Code en cada tarea: explicar qué va a hacer → esperar confirmación si es un cambio grande →
-escribir código y pruebas → dejarlo listo para revisión del compañero.
+Working order for Claude Code on each task: explain what it will do → wait for confirmation if it is a big change →
+write code and tests → leave it ready for the teammate's review.
 
-Trello: **Pending → Working → Check → Done**. Al terminar se pasa a *Check*; el compañero revisa. Si falla vuelve a *Working* con una nota.
-Definición de «Hecho»: código revisado, pruebas pasan, criterio cumplido, documentación al día.
+Trello: **Pending → Working → Check → Done**. When finished it goes to *Check*; the teammate reviews. If it fails it goes back to *Working* with a note.
+Definition of "Done": code reviewed, tests pass, criteria met, documentation up to date.
 
-## Convenciones del repositorio
+## Repository conventions
 
-- Ramas: `main` (estable), `feature/<nombre>`, `fix/<nombre>`, `docs/<nombre>`. Trabajo en rama + pull request revisada por el compañero.
-- Commits en inglés: `tipo: descripción` con `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
-- README principal en inglés (`README.md`), versión en español (`README.es.md`).
-- Código y comentarios en inglés.
-- Estructura: `apps/employee-app`, `apps/owner-app`, `apps/admin-panel`, `servers/local-server`, `servers/central-server`, `docs/`.
-- Licencia MIT.
-- No inventes funcionalidades fuera de la lista. Marca como provisional cualquier tecnología.
+- Branches: `main` (stable), `feature/<name>`, `fix/<name>`, `docs/<name>`. Work on a branch + pull request reviewed by the teammate.
+- Commits in English: `type: description` with `feat`, `fix`, `docs`, `refactor`, `test`, `chore`.
+- **Documentation in two languages:** the default file is in English (`README.md`, `CONTRIBUTING.md`, `CLAUDE.md`, `docs/database.md`, ...)
+  and the Spanish version has the same name with `.es` before the extension (`README.es.md`, `CONTRIBUTING.es.md`, ...).
+  Every time a document changes, **update both versions**.
+- Code and comments in English.
+- Structure: `apps/employee-app`, `apps/owner-app`, `apps/admin-panel`, `servers/local-server`, `servers/central-server`, `docs/`.
+- MIT license.
+- Do not invent features outside the list. Mark any technology as provisional.
 
-## Cómo trabajar con el equipo
+## How to work with the team
 
-- Antes de grandes cambios, explica qué vas a hacer y espera confirmación.
-- Los commits los hacen los integrantes con su propio usuario de Git.
-- Git: por ahora se deja como está; aún no hay nada importante subido.
-- Los usuarios prefieren explicaciones en español.
+- Before big changes, explain what you are going to do and wait for confirmation.
+- Commits are made by the team members with their own Git user.
+- Git: for now it is left as it is; nothing important has been pushed yet.
+- The team prefers explanations in Spanish.

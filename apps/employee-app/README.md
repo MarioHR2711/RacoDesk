@@ -1,5 +1,7 @@
 # employee-app
 
-Android app for restaurant staff (React Native, provisional). / App Android para el personal del restaurante (React Native, provisional).
+**Read this in other languages:** [Español](README.es.md)
 
-**Status:** not started. / **Estado:** sin empezar.
+App for restaurant staff: Android and an identical Windows version for the POS terminals (React Native, provisional).
+
+**Status:** not started.

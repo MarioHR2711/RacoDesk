@@ -1,5 +1,7 @@
 # local-server
 
-One per restaurant: API, business logic and local database (Laravel and PostgreSQL, provisional). / Uno por restaurante: API, lógica y base de datos local (Laravel y PostgreSQL, provisional).
+**Read this in other languages:** [Español](README.es.md)
 
-**Status:** not started. / **Estado:** sin empezar.
+One per restaurant: API, business logic and local database (Laravel and PostgreSQL, provisional). Runs on a Windows POS.
+
+**Status:** not started.

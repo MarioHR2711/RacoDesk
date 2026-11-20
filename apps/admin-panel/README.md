@@ -1,5 +1,7 @@
 # admin-panel
 
-Web panel for global administrators, without access to financial data (React, provisional). / Panel web para administradores globales, sin acceso a datos económicos (React, provisional).
+**Read this in other languages:** [Español](README.es.md)
 
-**Status:** not started. / **Estado:** sin empezar.
+Web panel for the global administrators. It manages the central database only and has no access to economic data (React, provisional).
+
+**Status:** not started.

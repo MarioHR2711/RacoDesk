@@ -19,8 +19,8 @@ Managing a restaurant means coordinating tables, orders, kitchen, payments, rese
 - **Local server (one per restaurant).** Runs the business logic and exposes an API, with its own database. Staff devices connect to it through the restaurant's local network, so daily work does not depend on Internet or on the central server.
 - **Central server.** Stores only general information: owners, companies, premises, local installations and global administrators with their permissions. It does **not** keep a copy of the operational or financial data of the restaurants. Remote access uses a WebSocket connection opened by the local server; details are still being decided.
 - **Employee app (Android).** Used by restaurant staff according to their role.
-- **Owner app (Android).** Lets owners check sales, income, expenses and history of all their premises.
-- **Admin web panel.** Separate interface for global administrators. Administrators cannot access financial information, and this restriction is enforced on the server, not only in the interface.
+- **Owner app (Android).** Lets owners check statistics (income, expenses, employees, products) of all their premises and change some data remotely.
+- **Admin web panel.** Separate interface for global administrators. It only manages the central database. Administrators cannot access financial information, and this restriction is enforced on the server, not only in the interface.
 - **Permissions** are always checked on the server.
 
 ## Planned features
@@ -103,6 +103,10 @@ The project follows an incremental and iterative model with two-week iterations.
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the branching and commit conventions used by the team.
 
+## Documentation
+
+Documentation is available in English (default) and Spanish (`.es.md` files). See the [`docs/`](docs/) folder: [database](docs/database.md) and [permission matrix](docs/permissions.md).
+
 ## License
 
-This project is released under the [MIT License](LICENSE).
+This project is released under the [MIT License](LICENSE). A Spanish translation is available in [LICENSE.es.md](LICENSE.es.md).

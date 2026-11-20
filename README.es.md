@@ -19,8 +19,8 @@ Gestionar un restaurante implica coordinar a la vez mesas, pedidos, cocina, cobr
 - **Servidor local (uno por restaurante).** Ejecuta la lógica del negocio y ofrece una API, con su propia base de datos. Los dispositivos del personal se conectan a él por la red local del restaurante, por lo que el trabajo diario no depende de Internet ni del servidor central.
 - **Servidor central.** Guarda solo información general: propietarios, empresas, locales, instalaciones locales y administradores globales con sus permisos. **No** guarda copia de los datos operativos ni económicos de los restaurantes. El acceso remoto usa una conexión WebSocket abierta por el servidor local; los detalles aún se están decidiendo.
 - **App de empleados (Android).** La usa el personal del restaurante según su rol.
-- **App del propietario (Android).** Permite consultar ventas, ingresos, gastos e histórico de todos sus locales.
-- **Panel web de administración.** Interfaz independiente para los administradores globales. Los administradores no pueden acceder a la información económica, y esta restricción se aplica en el servidor y no solo en la interfaz.
+- **App del propietario (Android).** Permite consultar estadísticas (ingresos, gastos, empleados, productos) de todos sus locales y cambiar algunos datos a distancia.
+- **Panel web de administración.** Interfaz independiente para los administradores globales. Solo gestiona la base de datos central. Los administradores no pueden acceder a la información económica, y esta restricción se aplica en el servidor y no solo en la interfaz.
 - **Los permisos** se comprueban siempre en el servidor.
 
 ## Funcionalidades previstas
@@ -101,8 +101,12 @@ El proyecto sigue un modelo incremental e iterativo con iteraciones de dos seman
 
 ## Contribuir
 
-Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para ver las convenciones de ramas y commits del equipo.
+Consulta [CONTRIBUTING.es.md](CONTRIBUTING.es.md) para ver las convenciones de ramas y commits del equipo.
+
+## Documentación
+
+La documentación está disponible en inglés (por defecto) y en español (archivos `.es.md`). Consulta la carpeta [`docs/`](docs/): [base de datos](docs/database.es.md) y [matriz de permisos](docs/permissions.es.md).
 
 ## Licencia
 
-Este proyecto se publica bajo la [licencia MIT](LICENSE).
+Este proyecto se publica bajo la [licencia MIT](LICENSE). Hay una traducción al español en [LICENSE.es.md](LICENSE.es.md).

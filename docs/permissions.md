@@ -1,50 +1,48 @@
-# Matriz de permisos (BORRADOR FINAL, pendiente de visto bueno)
+# Permission matrix
 
-> Borrador de Claude, corregido con las respuestas del equipo.
+**Read this in other languages:** [Español](permissions.es.md)
 
-Leyenda: ✔ puede · ✘ no puede · 👁 solo ver · L = solo su propio local · R = también en remoto (app del propietario)
+Legend: ✔ allowed · ✘ not allowed · 👁 view only · L = own premises only · R = also remotely (owner app)
 
-Reglas generales:
-- El **encargado** gestiona **1 local**. El **propietario** gestiona **todos** sus locales.
-- El administrador global (`ADMIN`) **nunca** ve datos económicos (ventas, ingresos, gastos, pagos, beneficios, estadísticas económicas).
-- Los permisos se comprueban en el servidor. Permisos efectivos = permisos del rol + permisos individuales.
-- Remoto (app del propietario): puede gestionar productos y precios, empleados (incluido borrar y cambiar rol), mesas, y horas y salarios.
-  Solo consulta pedidos y pagos. **No** toca pedidos, pagos ni reservas.
+General rules:
+- The **manager** manages **1 premises**. The **owner** manages **all** their premises.
+- The global administrator (`ADMIN`) **never** sees economic data (sales, income, expenses, payments, profits, economic statistics).
+- Permissions are checked on the server. Effective permissions = role permissions + individual permissions.
+- Remote (owner app): can manage products and prices, employees (including deleting and changing role), tables, and hours and salaries.
+  Orders and payments are only viewed. It does **not** touch orders, payments or reservations.
 
-| Acción | OWNER | MANAGER | WAITER | KITCHEN | DELIVERY | ADMIN global |
+| Action | OWNER | MANAGER | WAITER | KITCHEN | DELIVERY | Global ADMIN |
 |---|---|---|---|---|---|---|
-| Gestionar empleados (alta, baja, rol) | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
-| Asignar permisos individuales a empleados | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
-| Gestionar productos, categorías, ingredientes, modificadores y precios | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
-| Gestionar mesas y agrupaciones | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
-| Ver estado de las mesas | ✔ | ✔ | ✔ | ✘ | ✘ | ✘ |
-| Crear y modificar pedidos abiertos | ✔ | ✔ | ✔ (de cualquier mesa activa) | ✘ | ✘ | ✘ |
-| Anular o borrar un pedido abierto (queda en `audit_logs`) | ✔ | ✔ L | ✘ | ✘ | ✘ | ✘ |
-| Ver pedidos de cocina | ✔ | ✔ | ✔ | ✔ | ✘ | ✘ |
-| Ver pedidos y pagos (consulta) | ✔ R | ✔ L | pedidos abiertos de las mesas activas, sin importar quién los empezó | ✘ | ✘ | ✘ |
-| Confirmar pago y entregar ticket | ✔ | ✔ | ✔ | ✘ | ✘ | ✘ |
-| Reembolsar un pago | ✔ | ✔ | ✘ | ✘ | ✘ | ✘ |
-| Gestionar clientes | ✔ | ✔ | ✔ | ✘ | 👁 los de sus repartos | ✘ |
-| Gestionar reservas | ✔ | ✔ | ✔ | ✘ | ✘ | ✘ |
-| Asignar repartos | ✔ | ✔ | ✔ | ✘ | ✘ | ✘ |
-| Ver y actualizar sus repartos | ✘ | ✘ | ✘ | ✘ | ✔ | ✘ |
-| Ver inventario y avisos de stock | ✔ R | ✔ L | ✘ | ✔ | ✘ | ✘ |
-| Modificar existencias | ✔ | ✔ | ✘ | ✔ | ✘ | ✘ |
-| Gestionar proveedores | ✔ | ✔ | ✘ | ✘ | ✘ | ✘ |
-| Registrar horas de empleados | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
-| Registrar pago de salarios y horas extra | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
-| Registrar pago a proveedores | ✔ | ✔ | ✘ | ✘ | ✘ | ✘ |
-| Ver gastos (salarios y pagos a proveedores) y estadísticas | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
-| Ver sus propias horas y bolsa de descanso | ✔ | ✔ | ✔ | ✔ | ✔ | ✘ |
-| Configuración del local (copias, multiplicador de horas extra) | ✔ | ✔ L | ✘ | ✘ | ✘ | ✘ |
-| Ver registro de auditoría (`audit_logs`) del local | ✔ | ✔ L | ✘ | ✘ | ✘ | ✘ |
-| **Gestionar la base de datos central** (propietarios, empresas, locales, instalaciones, administradores y sus permisos) | ✘ | ✘ | ✘ | ✘ | ✘ | ✔ |
+| Manage employees (create, remove, role) | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
+| Assign individual permissions to employees | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
+| Manage products, categories, ingredients, modifiers and prices | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
+| Manage tables and table groups | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
+| View table status | ✔ | ✔ | ✔ | ✘ | ✘ | ✘ |
+| Create and modify open orders | ✔ | ✔ | ✔ (any active table) | ✘ | ✘ | ✘ |
+| Cancel or delete an open order (recorded in `audit_logs`) | ✔ | ✔ L | ✘ | ✘ | ✘ | ✘ |
+| View kitchen orders | ✔ | ✔ | ✔ | ✔ | ✘ | ✘ |
+| View orders and payments (read) | ✔ R | ✔ L | open orders of active tables, regardless of who started them | ✘ | ✘ | ✘ |
+| Confirm payment and hand over the ticket | ✔ | ✔ | ✔ | ✘ | ✘ | ✘ |
+| Refund a payment | ✔ | ✔ | ✘ | ✘ | ✘ | ✘ |
+| Manage customers | ✔ | ✔ | ✔ | ✘ | 👁 those of their deliveries | ✘ |
+| Manage reservations | ✔ | ✔ | ✔ | ✘ | ✘ | ✘ |
+| Assign deliveries | ✔ | ✔ | ✔ | ✘ | ✘ | ✘ |
+| View and update their own deliveries | ✘ | ✘ | ✘ | ✘ | ✔ | ✘ |
+| View inventory and stock alerts | ✔ R | ✔ L | ✘ | ✔ | ✘ | ✘ |
+| Modify stock | ✔ | ✔ | ✘ | ✔ | ✘ | ✘ |
+| Manage suppliers | ✔ | ✔ | ✘ | ✘ | ✘ | ✘ |
+| Record employee hours | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
+| Record salary and overtime payments | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
+| Record supplier payments | ✔ | ✔ | ✘ | ✘ | ✘ | ✘ |
+| View expenses (salaries and supplier payments) and statistics | ✔ R | ✔ L | ✘ | ✘ | ✘ | ✘ |
+| View their own hours and time-off bank | ✔ | ✔ | ✔ | ✔ | ✔ | ✘ |
+| Premises settings (backups, overtime multiplier) | ✔ | ✔ L | ✘ | ✘ | ✘ | ✘ |
+| View the premises audit log (`audit_logs`) | ✔ | ✔ L | ✘ | ✘ | ✘ | ✘ |
+| **Manage the central database** (owners, companies, premises, installations, administrators and their permissions) | ✘ | ✘ | ✘ | ✘ | ✘ | ✔ |
 
-Decisiones del equipo aplicadas:
-- El encargado ve todos los datos de su local, incluidos salarios y pagos a proveedores.
-- El camarero ve los pedidos abiertos de las mesas activas en ese momento, sin importar quién empezó a atender la mesa. Un pedido cerrado deja de verse.
-- Solo el propietario y el encargado pueden anular o borrar un pedido abierto. Los cerrados no se borran. Si más adelante queréis que lo puedan hacer más roles, se añade el permiso.
-- El administrador global **solo se encarga de la base de datos central**. No gestiona nada dentro de un local (empleados, productos, mesas, configuración, auditoría) ni ve datos económicos.
-- El camarero puede modificar los pedidos abiertos de cualquier mesa activa.
-
-Dudas que quedan: ninguna por ahora. Falta que el equipo dé el visto bueno final.
+Team decisions:
+- The manager sees all data of their premises, including salaries and supplier payments.
+- The waiter sees the open orders of the tables that are active at that moment, regardless of who started serving the table. A closed order is no longer visible.
+- Only the owner and the manager can cancel or delete an open order. Closed orders are never deleted. If more roles should be able to do it later, the permission is added.
+- The global administrator **only takes care of the central database**. They manage nothing inside a premises (employees, products, tables, settings, audit) and see no economic data.
+- The waiter can modify the open orders of any active table.

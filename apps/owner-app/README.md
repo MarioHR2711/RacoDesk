@@ -1,5 +1,7 @@
 # owner-app
 
-Android app for owners to check their premises (React Native, provisional). / App Android para que los propietarios consulten sus locales (React Native, provisional).
+**Read this in other languages:** [Español](README.es.md)
 
-**Status:** not started. / **Estado:** sin empezar.
+Android app for owners to check and manage their premises remotely (React Native, provisional).
+
+**Status:** not started.
