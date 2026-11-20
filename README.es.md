@@ -17,7 +17,7 @@ Gestionar un restaurante implica coordinar a la vez mesas, pedidos, cocina, cobr
 ## Cómo funciona (diseño previsto)
 
 - **Servidor local (uno por restaurante).** Ejecuta la lógica del negocio y ofrece una API, con su propia base de datos. Los dispositivos del personal se conectan a él por la red local del restaurante, por lo que el trabajo diario no depende de Internet ni del servidor central.
-- **Servidor central.** Guarda solo información general: propietarios, empresas, locales, instalaciones locales y administradores globales con sus permisos. **No** guarda copia de los datos operativos ni económicos de los restaurantes. El mecanismo de acceso remoto del servidor central a los servidores locales aún no está decidido.
+- **Servidor central.** Guarda solo información general: propietarios, empresas, locales, instalaciones locales y administradores globales con sus permisos. **No** guarda copia de los datos operativos ni económicos de los restaurantes. El acceso remoto usa una conexión WebSocket abierta por el servidor local; los detalles aún se están decidiendo.
 - **App de empleados (Android).** La usa el personal del restaurante según su rol.
 - **App del propietario (Android).** Permite consultar ventas, ingresos, gastos e histórico de todos sus locales.
 - **Panel web de administración.** Interfaz independiente para los administradores globales. Los administradores no pueden acceder a la información económica, y esta restricción se aplica en el servidor y no solo en la interfaz.

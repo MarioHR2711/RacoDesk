@@ -17,7 +17,7 @@ Managing a restaurant means coordinating tables, orders, kitchen, payments, rese
 ## How it works (planned design)
 
 - **Local server (one per restaurant).** Runs the business logic and exposes an API, with its own database. Staff devices connect to it through the restaurant's local network, so daily work does not depend on Internet or on the central server.
-- **Central server.** Stores only general information: owners, companies, premises, local installations and global administrators with their permissions. It does **not** keep a copy of the operational or financial data of the restaurants. The mechanism for remote access from the central server to the local servers has not been decided yet.
+- **Central server.** Stores only general information: owners, companies, premises, local installations and global administrators with their permissions. It does **not** keep a copy of the operational or financial data of the restaurants. Remote access uses a WebSocket connection opened by the local server; details are still being decided.
 - **Employee app (Android).** Used by restaurant staff according to their role.
 - **Owner app (Android).** Lets owners check sales, income, expenses and history of all their premises.
 - **Admin web panel.** Separate interface for global administrators. Administrators cannot access financial information, and this restriction is enforced on the server, not only in the interface.
