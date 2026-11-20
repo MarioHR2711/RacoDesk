@@ -1,0 +1,50 @@
+# Secrets and local configuration (never commit real credentials)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.keystore
+*.jks
+
+# PHP / Laravel
+vendor/
+storage/*.key
+storage/logs/*
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+
+# Node / React / React Native
+node_modules/
+npm-debug.log*
+yarn-error.log*
+dist/
+build/
+.expo/
+.metro-health-check*
+
+# Android
+android/app/build/
+android/.gradle/
+android/local.properties
+*.apk
+*.aab
+
+# Databases and backups
+*.sqlite
+*.sqlite3
+*.sql.gz
+*.dump
+
+# Editors and operating systems
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.log
