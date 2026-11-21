@@ -48,3 +48,8 @@ android/local.properties
 .DS_Store
 Thumbs.db
 *.log
+
+# Claude Code local context (kept on each computer, not in the repository for now)
+CLAUDE.md
+CLAUDE.es.md
+.claude/
