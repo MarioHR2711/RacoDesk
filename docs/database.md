@@ -56,8 +56,12 @@ There are two independent databases:
 | description | text | |
 
 ### `role_permissions`
-**Purpose:** which permissions each role has.
-Columns: `role_id` FK → roles, `permission_id` FK → permissions. PK (role_id, permission_id).
+**Purpose:** which permissions each role has. Join table.
+
+| Column | Type | Notes |
+|---|---|---|
+| role_id | bigint FK → roles.id | PK (role_id, permission_id) |
+| permission_id | bigint FK → permissions.id |  |
 
 ### `users`
 **Purpose:** employees who use the system at the premises.
@@ -77,8 +81,12 @@ Columns: `role_id` FK → roles, `permission_id` FK → permissions. PK (role_id
 | deleted_at | timestamptz NULL | |
 
 ### `user_permissions`
-**Purpose:** extra permissions assigned to a specific user. Effective permissions = role permissions + individual permissions.
-Columns: `user_id` FK, `permission_id` FK. PK (user_id, permission_id).
+**Purpose:** extra permissions assigned to a specific user. Effective permissions = role permissions + individual permissions. Join table.
+
+| Column | Type | Notes |
+|---|---|---|
+| user_id | bigint FK → users.id | PK (user_id, permission_id) |
+| permission_id | bigint FK → permissions.id |  |
 
 ### `linked_owners`
 **Purpose:** owners authorized to query this premises from outside. The local checks authorization here and does not rely only on the central.
@@ -149,17 +157,33 @@ sum of `overtime_hours` with `TIME_OFF` − sum of `hours` in this table.
 
 ### `table_groups`
 **Purpose:** groups of several tables. They are reused when they stop being active. There is no history.
-Columns: `id`, `active` boolean, `created_at`.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| active | boolean |  |
+| created_at | timestamptz |  |
 
 ### `table_group_members`
-**Purpose:** which tables make up each group.
-Columns: `group_id` FK, `table_id` FK. PK (group_id, table_id).
+**Purpose:** which tables make up each group. Join table.
+
+| Column | Type | Notes |
+|---|---|---|
+| group_id | bigint FK → table_groups.id | PK (group_id, table_id) |
+| table_id | bigint FK → tables.id |  |
+
 A table can only be in one active group at a time (enforced in the application).
 
 ## 1.4 Products and inventory
 
 ### `categories`
-**Purpose:** product categories. Columns: `id`, `name`, `active`.
+**Purpose:** product categories.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| name | text |  |
+| active | boolean |  |
 
 ### `products`
 **Purpose:** the restaurant's menu.
@@ -202,8 +226,13 @@ A table can only be in one active group at a time (enforced in the application).
 There is no inventory movements table (team decision).
 
 ### `product_ingredients`
-**Purpose:** which ingredients each product contains.
-Columns: `product_id` FK, `ingredient_id` FK, `quantity numeric(10,3)`. PK (product_id, ingredient_id).
+**Purpose:** which ingredients each product contains. Join table.
+
+| Column | Type | Notes |
+|---|---|---|
+| product_id | bigint FK → products.id | PK (product_id, ingredient_id) |
+| ingredient_id | bigint FK → ingredients.id |  |
+| quantity | numeric(10,3) | Quantity of the ingredient in one unit of the product |
 
 ### `ingredient_modifiers`
 **Purpose:** possible modifications of an ingredient in an order.
@@ -219,7 +248,16 @@ Columns: `product_id` FK, `ingredient_id` FK, `quantity numeric(10,3)`. PK (prod
 
 ### `customers`
 **Purpose:** customers with their contact details and one address (for reservations and delivery).
-Columns: `id`, `name`, `phone`, `address`, `deleted_at`. `email` is not stored: only name, phone and address are kept. The address is only needed for delivery.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| name | text |  |
+| phone | text |  |
+| address | text NULL | Only needed for delivery |
+| deleted_at | timestamptz NULL |  |
+
+`email` is not stored: only name, phone and address are kept.
 To delete a customer who requests it, the record is anonymized (name, phone and address emptied) and their orders are kept.
 
 ### `orders`
@@ -253,7 +291,14 @@ Constraint: `DINE_IN` requires `table_id` or `group_id` (not both). `TAKEAWAY` a
 
 ### `order_item_modifiers`
 **Purpose:** modifiers applied to each product in the order.
-Columns: `id`, `order_item_id` FK, `ingredient_id` FK, `type` (`REMOVE`/`EXTRA`), `price numeric(10,2)`.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| order_item_id | bigint FK → order_items.id |  |
+| ingredient_id | bigint FK → ingredients.id |  |
+| type | enum | `REMOVE`, `EXTRA` |
+| price | numeric(10,2) | Price applied at the time of the order |
 
 ## 1.6 Reservations
 
@@ -285,7 +330,13 @@ Constraint (requires the `btree_gist` extension):
 ## 1.7 Delivery
 
 ### `delivery_drivers`
-**Purpose:** delivery drivers. Columns: `id`, `user_id` FK UNIQUE → users.id, `active`.
+**Purpose:** delivery drivers.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| user_id | bigint FK UNIQUE → users.id |  |
+| active | boolean |  |
 
 ### `delivery_orders`
 **Purpose:** tracking of the delivery of a home-delivery order.
@@ -344,11 +395,27 @@ When a payment becomes `PAID`, `orders.closed_at` and `orders.ticket_number` are
 
 ### `user_devices`
 **Purpose:** devices of each user (phones, tablets and Windows POS) and their address for sending alerts.
-Columns: `id`, `user_id` FK, `device_type` (`ANDROID`, `WINDOWS`), `device_token`, `last_seen`.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| user_id | bigint FK → users.id |  |
+| device_type | enum | `ANDROID`, `WINDOWS` |
+| device_token | text | Address for sending alerts to the device |
+| last_seen | timestamptz |  |
 
 ### `notifications`
 **Purpose:** alerts to users.
-Columns: `id`, `user_id` FK (recipient), `type` (`LOW_STOCK` to manager and owner, `NEW_ORDER` to kitchen), `ingredient_id` FK NULL, `order_id` FK NULL, `message`, `read_at` NULL.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| user_id | bigint FK → users.id | Recipient |
+| type | enum | `LOW_STOCK` (to manager and owner), `NEW_ORDER` (to kitchen) |
+| ingredient_id | bigint FK NULL → ingredients.id | For `LOW_STOCK` |
+| order_id | bigint FK NULL → orders.id | For `NEW_ORDER` |
+| message | text |  |
+| read_at | timestamptz NULL |  |
 
 ### `audit_logs`
 **Purpose:** record of important actions (not all of them).
@@ -383,10 +450,24 @@ Chain: owner → company → premises → local installation. The database is in
 | active | boolean | |
 
 ### `companies`
-**Purpose:** each owner's companies. Columns: `id`, `owner_id` FK → owners, `name`.
+**Purpose:** each owner's companies.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| owner_id | bigint FK → owners.id |  |
+| name | text |  |
 
 ### `locations`
-**Purpose:** premises of each company. Columns: `id`, `company_id` FK → companies, `name`, `address`, `active`.
+**Purpose:** premises of each company.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| company_id | bigint FK → companies.id |  |
+| name | text |  |
+| address | text |  |
+| active | boolean |  |
 
 ### `local_installations`
 **Purpose:** installation of the server software at a premises and its connection state.
@@ -406,20 +487,54 @@ There is no `api_url`: the local server opens the connection to the central.
 
 ### `pairing_tokens`
 **Purpose:** single-use tokens to pair a premises through a QR code.
-Columns: `id`, `location_id` FK, `token_hash` UNIQUE, `expires_at`, `used_at` NULL.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| location_id | bigint FK → locations.id |  |
+| token_hash | text UNIQUE | Hash of the token. Never in plain text |
+| expires_at | timestamptz | Short-lived |
+| used_at | timestamptz NULL | Filled in when used; it cannot be used again |
 
 ### `access_logs`
 **Purpose:** who queried which premises and when. **It does not store the content of the data.**
-Columns: `id`, `owner_id` FK, `location_id` FK, `query_code` (for example `INCOME`, `EXPENSES`), `result_status`, `created_at`.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| owner_id | bigint FK → owners.id |  |
+| location_id | bigint FK → locations.id |  |
+| query_code | text | Type of query or change (for example `INCOME`, `EXPENSES`) |
+| result_status | text | Outcome of the request |
+| created_at | timestamptz |  |
 
 ### `admins`
-**Purpose:** global administrators. Columns: `id`, `name`, `email` UNIQUE, `password_hash`, `active`.
+**Purpose:** global administrators.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| name | text |  |
+| email | text UNIQUE |  |
+| password_hash | text |  |
+| active | boolean |  |
 
 ### `admin_permissions`
-**Purpose:** permissions available to administrators. Columns: `id`, `code` UNIQUE, `description`.
+**Purpose:** permissions available to administrators.
+
+| Column | Type | Notes |
+|---|---|---|
+| id | bigint PK |  |
+| code | text UNIQUE |  |
+| description | text |  |
 
 ### `admin_user_permissions`
-**Purpose:** permissions of each administrator. Columns: `admin_id` FK, `permission_id` FK. PK (admin_id, permission_id).
+**Purpose:** permissions of each administrator. Join table.
+
+| Column | Type | Notes |
+|---|---|---|
+| admin_id | bigint FK → admins.id | PK (admin_id, permission_id) |
+| permission_id | bigint FK → admin_permissions.id |  |
 
 ---
 

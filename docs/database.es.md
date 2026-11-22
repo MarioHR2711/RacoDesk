@@ -56,8 +56,12 @@ Hay dos bases de datos independientes:
 | description | text | |
 
 ### `role_permissions`
-**Función:** qué permisos tiene cada rol.
-Columnas: `role_id` FK → roles, `permission_id` FK → permissions. PK (role_id, permission_id).
+**Función:** qué permisos tiene cada rol. Tabla de unión.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| role_id | bigint FK → roles.id | PK (role_id, permission_id) |
+| permission_id | bigint FK → permissions.id |  |
 
 ### `users`
 **Función:** empleados que usan el sistema en el local.
@@ -77,8 +81,12 @@ Columnas: `role_id` FK → roles, `permission_id` FK → permissions. PK (role_i
 | deleted_at | timestamptz NULL | |
 
 ### `user_permissions`
-**Función:** permisos extra asignados a un usuario concreto. Permisos efectivos = permisos del rol + permisos individuales.
-Columnas: `user_id` FK, `permission_id` FK. PK (user_id, permission_id).
+**Función:** permisos extra asignados a un usuario concreto. Permisos efectivos = permisos del rol + permisos individuales. Tabla de unión.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| user_id | bigint FK → users.id | PK (user_id, permission_id) |
+| permission_id | bigint FK → permissions.id |  |
 
 ### `linked_owners`
 **Función:** propietarios autorizados a consultar este local desde el exterior. El local comprueba aquí la autorización y no se fía solo del central.
@@ -149,17 +157,33 @@ suma de `overtime_hours` con `TIME_OFF` − suma de `hours` de esta tabla.
 
 ### `table_groups`
 **Función:** agrupaciones de varias mesas. Se reutilizan cuando dejan de estar activas. No hay historial.
-Columnas: `id`, `active` boolean, `created_at`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| active | boolean |  |
+| created_at | timestamptz |  |
 
 ### `table_group_members`
-**Función:** qué mesas forman cada agrupación.
-Columnas: `group_id` FK, `table_id` FK. PK (group_id, table_id).
+**Función:** qué mesas forman cada agrupación. Tabla de unión.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| group_id | bigint FK → table_groups.id | PK (group_id, table_id) |
+| table_id | bigint FK → tables.id |  |
+
 Una mesa solo puede estar en una agrupación activa a la vez (se controla en la aplicación).
 
 ## 1.4 Productos e inventario
 
 ### `categories`
-**Función:** categorías de productos. Columnas: `id`, `name`, `active`.
+**Función:** categorías de productos.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| name | text |  |
+| active | boolean |  |
 
 ### `products`
 **Función:** carta del restaurante.
@@ -202,8 +226,13 @@ Una mesa solo puede estar en una agrupación activa a la vez (se controla en la 
 No hay tabla de movimientos de inventario (decisión del equipo).
 
 ### `product_ingredients`
-**Función:** qué ingredientes lleva cada producto.
-Columnas: `product_id` FK, `ingredient_id` FK, `quantity numeric(10,3)`. PK (product_id, ingredient_id).
+**Función:** qué ingredientes lleva cada producto. Tabla de unión.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| product_id | bigint FK → products.id | PK (product_id, ingredient_id) |
+| ingredient_id | bigint FK → ingredients.id |  |
+| quantity | numeric(10,3) | Cantidad del ingrediente en una unidad del producto |
 
 ### `ingredient_modifiers`
 **Función:** modificaciones posibles de un ingrediente en un pedido.
@@ -219,7 +248,16 @@ Columnas: `product_id` FK, `ingredient_id` FK, `quantity numeric(10,3)`. PK (pro
 
 ### `customers`
 **Función:** clientes con su contacto y una dirección (para reservas y reparto).
-Columnas: `id`, `name`, `phone`, `address`, `deleted_at`. Se quitó `email`: solo se guardan nombre, teléfono y dirección. La dirección solo hace falta para reparto.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| name | text |  |
+| phone | text |  |
+| address | text NULL | Solo hace falta para reparto |
+| deleted_at | timestamptz NULL |  |
+
+No se guarda `email`: solo nombre, teléfono y dirección.
 Para borrar a un cliente que lo pida se anonimiza (nombre, teléfono y dirección vacíos) y se conservan sus pedidos.
 
 ### `orders`
@@ -253,7 +291,14 @@ Restricción: `DINE_IN` exige `table_id` o `group_id` (no ambos). `TAKEAWAY` y `
 
 ### `order_item_modifiers`
 **Función:** modificadores aplicados a cada producto del pedido.
-Columnas: `id`, `order_item_id` FK, `ingredient_id` FK, `type` (`REMOVE`/`EXTRA`), `price numeric(10,2)`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| order_item_id | bigint FK → order_items.id |  |
+| ingredient_id | bigint FK → ingredients.id |  |
+| type | enum | `REMOVE`, `EXTRA` |
+| price | numeric(10,2) | Precio aplicado en el momento del pedido |
 
 ## 1.6 Reservas
 
@@ -285,7 +330,13 @@ Restricción (requiere la extensión `btree_gist`):
 ## 1.7 Reparto
 
 ### `delivery_drivers`
-**Función:** repartidores. Columnas: `id`, `user_id` FK UNIQUE → users.id, `active`.
+**Función:** repartidores.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| user_id | bigint FK UNIQUE → users.id |  |
+| active | boolean |  |
 
 ### `delivery_orders`
 **Función:** seguimiento del reparto de un pedido a domicilio.
@@ -344,11 +395,27 @@ Al pasar a `PAID` se rellenan `orders.closed_at` y `orders.ticket_number`. Los p
 
 ### `user_devices`
 **Función:** dispositivos de cada usuario (móviles, tabletas y TPV con Windows) y su dirección para enviar avisos.
-Columnas: `id`, `user_id` FK, `device_type` (`ANDROID`, `WINDOWS`), `device_token`, `last_seen`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| user_id | bigint FK → users.id |  |
+| device_type | enum | `ANDROID`, `WINDOWS` |
+| device_token | text | Dirección para enviar avisos al dispositivo |
+| last_seen | timestamptz |  |
 
 ### `notifications`
 **Función:** avisos a los usuarios.
-Columnas: `id`, `user_id` FK (destinatario), `type` (`LOW_STOCK` al encargado y propietario, `NEW_ORDER` a cocina), `ingredient_id` FK NULL, `order_id` FK NULL, `message`, `read_at` NULL.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| user_id | bigint FK → users.id | Destinatario |
+| type | enum | `LOW_STOCK` (al encargado y propietario), `NEW_ORDER` (a cocina) |
+| ingredient_id | bigint FK NULL → ingredients.id | Para `LOW_STOCK` |
+| order_id | bigint FK NULL → orders.id | Para `NEW_ORDER` |
+| message | text |  |
+| read_at | timestamptz NULL |  |
 
 ### `audit_logs`
 **Función:** registro de acciones importantes (no todas).
@@ -383,10 +450,24 @@ Cadena: propietario → empresa → local → instalación local. La base de dat
 | active | boolean | |
 
 ### `companies`
-**Función:** empresas de cada propietario. Columnas: `id`, `owner_id` FK → owners, `name`.
+**Función:** empresas de cada propietario.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| owner_id | bigint FK → owners.id |  |
+| name | text |  |
 
 ### `locations`
-**Función:** locales de cada empresa. Columnas: `id`, `company_id` FK → companies, `name`, `address`, `active`.
+**Función:** locales de cada empresa.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| company_id | bigint FK → companies.id |  |
+| name | text |  |
+| address | text |  |
+| active | boolean |  |
 
 ### `local_installations`
 **Función:** instalación del software de servidor en un local y su estado de conexión.
@@ -406,20 +487,54 @@ No hay `api_url`: el servidor local abre la conexión hacia el central.
 
 ### `pairing_tokens`
 **Función:** tokens de un solo uso para vincular un local por código QR.
-Columnas: `id`, `location_id` FK, `token_hash` UNIQUE, `expires_at`, `used_at` NULL.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| location_id | bigint FK → locations.id |  |
+| token_hash | text UNIQUE | Hash del token. Nunca en claro |
+| expires_at | timestamptz | De vida corta |
+| used_at | timestamptz NULL | Se rellena al usarse; no se puede usar de nuevo |
 
 ### `access_logs`
 **Función:** quién consultó qué local y cuándo. **No guarda el contenido de los datos.**
-Columnas: `id`, `owner_id` FK, `location_id` FK, `query_code` (por ejemplo `INCOME`, `EXPENSES`), `result_status`, `created_at`.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| owner_id | bigint FK → owners.id |  |
+| location_id | bigint FK → locations.id |  |
+| query_code | text | Tipo de consulta o cambio (por ejemplo `INCOME`, `EXPENSES`) |
+| result_status | text | Resultado de la petición |
+| created_at | timestamptz |  |
 
 ### `admins`
-**Función:** administradores globales. Columnas: `id`, `name`, `email` UNIQUE, `password_hash`, `active`.
+**Función:** administradores globales.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| name | text |  |
+| email | text UNIQUE |  |
+| password_hash | text |  |
+| active | boolean |  |
 
 ### `admin_permissions`
-**Función:** permisos disponibles para administradores. Columnas: `id`, `code` UNIQUE, `description`.
+**Función:** permisos disponibles para administradores.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| id | bigint PK |  |
+| code | text UNIQUE |  |
+| description | text |  |
 
 ### `admin_user_permissions`
-**Función:** permisos de cada administrador. Columnas: `admin_id` FK, `permission_id` FK. PK (admin_id, permission_id).
+**Función:** permisos de cada administrador. Tabla de unión.
+
+| Columna | Tipo | Notas |
+|---|---|---|
+| admin_id | bigint FK → admins.id | PK (admin_id, permission_id) |
+| permission_id | bigint FK → admin_permissions.id |  |
 
 ---
 
