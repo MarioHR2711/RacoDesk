@@ -4,13 +4,21 @@
 
 ## Ramas
 
-- `main`: versión estable, siempre presentable.
+- `main`: versión estable, siempre presentable. Solo recibe código que ya se ha probado en `develop`.
+- `develop`: rama de integración. Todo el trabajo se fusiona primero aquí y se prueba aquí.
 - `feature/<nombre-corto>`: funcionalidad nueva, por ejemplo `feature/orders-api`.
 - `fix/<nombre-corto>`: corrección de errores.
 - `docs/<nombre-corto>`: cambios de documentación.
 
-Se trabaja en una rama y se abre una pull request que revisa el compañero antes de fusionarla en `main`
-(coincide con el paso **Check** de nuestro tablero de Trello).
+Forma de trabajar:
+
+1. **Toda rama de trabajo se crea desde `develop`** (nunca desde `main`).
+2. Se trabaja en la rama y se abre una pull request **hacia `develop`**. La revisa el compañero antes de fusionarla
+   (coincide con el paso **Check** de nuestro tablero de Trello).
+3. Antes de abrir la pull request, se trae el último `develop` a tu rama (`git pull origin develop`) y se resuelven allí los conflictos que haya.
+4. Los cambios se prueban en `develop`. Cuando las pruebas pasan, al final de cada iteración se fusiona `develop` en `main`
+   y se etiqueta (`it-1`, `it-2`, ...).
+5. Las ramas **no se borran** después de fusionarlas, para conservar el historial del trabajo.
 
 ## Mensajes de commit
 

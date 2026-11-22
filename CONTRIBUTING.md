@@ -4,13 +4,21 @@
 
 ## Branches
 
-- `main`: stable version, always presentable.
+- `main`: stable version, always presentable. It only receives code that has already been tested in `develop`.
+- `develop`: integration branch. All work is merged here first and tested here.
 - `feature/<short-name>`: new functionality, e.g. `feature/orders-api`.
 - `fix/<short-name>`: bug fixes.
 - `docs/<short-name>`: documentation changes.
 
-Work on a branch and open a pull request. The other team member reviews it before merging into `main`
-(this matches the **Check** step of our Trello board).
+Workflow:
+
+1. **Every working branch is created from `develop`** (never from `main`).
+2. Work on the branch and open a pull request **into `develop`**. The other team member reviews it before merging
+   (this matches the **Check** step of our Trello board).
+3. Before opening the pull request, bring the latest `develop` into your branch (`git pull origin develop`) and resolve any conflicts there.
+4. Changes are tested in `develop`. When the tests pass, at the end of each iteration `develop` is merged into `main`
+   and tagged (`it-1`, `it-2`, ...).
+5. Branches are **not deleted** after being merged, so the history of the work is kept.
 
 ## Commit messages
 
